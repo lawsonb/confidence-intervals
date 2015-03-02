@@ -48,3 +48,4 @@ shinyServer(function(input, output) {
     plot(density(intervals[3,]), main="Interval Lengths")
     })
 })
+
