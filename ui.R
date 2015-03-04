@@ -4,14 +4,14 @@ library(shiny)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("CI for mean of a Normal Distribution (mean and var not known?)"),
+  titlePanel("Confidence Intervals for a Normal Distribution"),
   
   # Sidebar with a slider input for the number of bins
   sidebarLayout(
     sidebarPanel(
       actionButton("action", label="Refresh"),
       sliderInput("cr",
-                  "Coverage rate:",min = 0.500,max = 0.999,value = 0.95),
+                  "Coverage rate:",min = 0.01,max = 0.999,value = 0.75),
       sliderInput("trials",
                   "Number of samples:",min = 20,max = 200,value = 100),
       sliderInput("size",
@@ -23,7 +23,8 @@ shinyUI(fluidPage(
      ),
     # Show a plot of the trials
     mainPanel(
-      plotOutput("distPlot"),
+      plotOutput("unknownPlot"),
+      plotOutput("knownPlot"),
       br(),
       p("Code ",
         a("here", 
