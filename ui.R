@@ -4,7 +4,7 @@ library(shiny)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Confidence Intervals for a Normal Distribution"),
+  titlePanel("CI for mean of a Normal Distribution (mean and var not known?)"),
   
   # Sidebar with a slider input for the number of bins
   sidebarLayout(
@@ -27,7 +27,8 @@ shinyUI(fluidPage(
       br(),
       p("Code ",
         a("here", 
-          href = "https://github.com/lawsonb/confidence-intervals"))
+          href = "https://github.com/lawsonb/confidence-intervals", 
+          target="_blank"))
     )
   )
 ))
