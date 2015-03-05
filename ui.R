@@ -11,7 +11,7 @@ shinyUI(fluidPage(
     sidebarPanel(
       actionButton("action", label="Refresh"),
       sliderInput("cr",
-                  "Coverage rate:",min = 0.01,max = 0.999,value = 0.75),
+                  "Coverage rate:",min = 0.01,max = 0.99,value = 0.75),
       sliderInput("trials",
                   "Number of samples:",min = 20,max = 200,value = 100),
       sliderInput("size",
