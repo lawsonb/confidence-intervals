@@ -13,7 +13,7 @@ shinyServer(function(input, output) {
   
   both.unknown = function(cr, n) qt( (cr + 1)/2, n-1 ) / sqrt(n)
   
-  mean.unknown = function(cr, n, sd) qnorm( (cr + 1)/2 ) / sqrt(n)
+  mean.unknown = function(cr, n) qnorm( (cr + 1)/2 ) / sqrt(n)
   
   # var.unknown
  
