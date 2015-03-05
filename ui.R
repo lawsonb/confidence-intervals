@@ -23,8 +23,8 @@ shinyUI(fluidPage(
      ),
     # Show a plot of the trials
     mainPanel(
-      plotOutput("unknownPlot"),
-      plotOutput("knownPlot"),
+      plotOutput("unknown.both.Plot"),
+      plotOutput("unknown.mean.Plot"),
       br(),
       p("Code ",
         a("here", 
