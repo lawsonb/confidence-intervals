@@ -1,13 +1,8 @@
 library(shiny)
 
-# questions
-#   this is for mean and var unknown, right?
-#   what's good way to title that?
 #
 # to do
 #   CI for var (sd)
-#   CI's for various things known or not (I think these won't
-#        be visually that different)
 #   CI for other distributions and their means, vars, parameters of interest?
 #
 # question, though, is what do we want people to get out of the visualization?
@@ -15,7 +10,17 @@ library(shiny)
 
 shinyServer(function(input, output) {
   
-  output$unknownPlot <- renderPlot({
+  
+  both.unknown = function(cr, n) qt( (cr + 1)/2, n-1 ) / sqrt(n)
+  
+  mean.unknown = function(cr, n, sd) qnorm( (cr + 1)/2 ) / sqrt(n)
+  
+  # var.unknown
+ 
+  # blue if interval contains the parameter, red if it does not
+  infocol = c("blue", "red")
+      
+  make.plots = function(type.unknown = "Mean and Variance") {
     cr = input$cr
     t = input$trials
     n = input$size
@@ -24,109 +29,50 @@ shinyServer(function(input, output) {
     a = input$action # causes refresh of plots (a not used)
     
     # the value c.sqrtn is the same for every coverage rate cr and n
-    c.sqrtn = qt( (cr + 1)/2, n-1 ) / sqrt(n)
-    # this calculates interval for t trials
-    intervals = sapply(1:t, function(k) {
+    if (type.unknown == "Mean and Variance") c.sqrtn = both.unknown(cr, n) 
+    if (type.unknown == "Only Mean") c.sqrtn = mean.unknown(cr, n) 
+
+    # calculate interval for t trials and coverage
+    interval = sapply(1:t, function(k) {
       sample = rnorm(n, m, sd)
       sample.mean = mean(sample)
-      half.length = c.sqrtn * sd(sample)
-      c(sample.mean - half.length, sample.mean + half.length, 2*half.length)
+      if (type.unknown == "Mean and Variance") 
+          half.length = c.sqrtn * sd(sample) else {
+          half.length = c.sqrtn * sd 
+        }
+      lower = sample.mean - half.length
+      upper = sample.mean + half.length
+      if (lower <= m &  m <= upper ) cover = 1 else cover = 2
+      c(lower, upper, 2*half.length, cover)
     })
-    lth = 1 # this is the line width (maybe change size if t really big or small?)
-    cover = "blue"
-    nocover = "red"
-    
+     
     # draw first trial separately to set up the plot
-    # (this has to be inefficient, must be better way to do this,
-    #  also, I think there must be a more efficient way to count # of CI
-    #  that don't cover mean)
-    if (intervals[1,1] > m | intervals[2,1] < m) {
-      notcover1 = 1
-      clr = nocover } else {
-        clr = cover
-        notcover1 = 0
-      }
     par(mfrow=c(1,2))
-    plot(intervals[1:2,1], c(1,1), type = "l", col = clr, lwd = lth,
-         ylim = c(0,t), xlim = range( intervals[1:2,] ), ylab = "Trial",
-         xlab = "",
-         main = paste("Mean and Variance unknown") )
-    mtext( paste("Coverage",cr,"  ",t, "trials of sample of size",n) )
+    plot(interval[1:2,1], c(1,1), type = "l", col = infocol[ interval[4,1] ],
+         ylim = c(0,t), xlim = range( interval[1:2,] ), 
+         ylab = "Trial", xlab = "",
+         main = paste( type.unknown, "Unknown" ) )
     abline(v = m, col = "green")
+    mtext( paste("Coverage",cr,"  ",t, "trials of sample of size",n) )
+    notcover = t - sum(interval[4,]-1)
+    mtext( paste0(notcover, " (",round(notcover/t,4),") CI include the mean of ", m), 1, 2 )
     
     # this plots the remaining 2:t trials
-    notcover = sapply(2:t, function(k) {
-      if (intervals[1,k] > m | intervals[2,k] < m) {
-        notcover = 1
-        clr = nocover } else {
-          clr = cover
-          notcover = 0
-        }
-      lines(intervals[1:2,k], c(k,k), col = clr, lwd = lth)
-      notcover
-    })
-    notcover = sum(notcover) + notcover1
-    mtext( paste0(notcover, " (",round(notcover/t,4),") CI's do not include the mean of ", m), 1, 2 )
+    for (k in 2:t) lines( interval[1:2, k], c(k, k), 
+                         col = infocol[ interval[4,k] ] )
     
     # this does the second plot -- density plot of interval lengths
-    plot(density(intervals[3,]), main="Interval Lengths")
-    })
+    plot(density(interval[3,]), main="Interval Lengths")
+    if (type.unknown == "Only Mean") 
+      mtext(paste("All intervals length",
+                  round(mean(interval[3,]),3)))  #,sd(interval[3,])))
+    else {
+      mtext(paste0("Interval mean=",round(mean(interval[3,]),3),
+      " sd=",round(sd(interval[3,]),3)))
+    }
+  }
   
-  output$knownPlot <- renderPlot({
-    cr = input$cr
-    t = input$trials
-    n = input$size
-    m = input$mean
-    sd = input$sd
-    a = input$action # causes refresh of plots (a not used)
-    
-    # the value c.sqrtn is the same for every coverage rate cr and n
-    c.sqrtn = qt( (cr + 1)/2, n-1 ) / sqrt(n)
-    # this calculates interval for t trials
-    intervals = sapply(1:t, function(k) {
-      sample = rnorm(n, m, sd)
-      sample.mean = mean(sample)
-      half.length = c.sqrtn * sd(sample)
-      c(sample.mean - half.length, sample.mean + half.length, 2*half.length)
-    })
-    lth = 1 # this is the line width (maybe change size if t really big or small?)
-    cover = "blue"
-    nocover = "red"
-    
-    # draw first trial separately to set up the plot
-    # (this has to be inefficient, must be better way to do this,
-    #  also, I think there must be a more efficient way to count # of CI
-    #  that don't cover mean)
-    if (intervals[1,1] > m | intervals[2,1] < m) {
-      notcover1 = 1
-      clr = nocover } else {
-        clr = cover
-        notcover1 = 0
-      }
-    par(mfrow=c(1,2))
-    plot(intervals[1:2,1], c(1,1), type = "l", col = clr, lwd = lth,
-         ylim = c(0,t), xlim = range( intervals[1:2,] ), ylab = "Trial",
-         xlab = "",
-         main = paste("Mean and Variance known [not implemented yet]") )
-    mtext( paste("Coverage",cr,"  ",t, "trials of sample of size",n) )
-    abline(v = m, col = "green")
-    
-    # this plots the remaining 2:t trials
-    notcover = sapply(2:t, function(k) {
-      if (intervals[1,k] > m | intervals[2,k] < m) {
-        notcover = 1
-        clr = nocover } else {
-          clr = cover
-          notcover = 0
-        }
-      lines(intervals[1:2,k], c(k,k), col = clr, lwd = lth)
-      notcover
-    })
-    notcover = sum(notcover) + notcover1
-    mtext( paste0(notcover, " (",round(notcover/t,4),") CI's do not include the mean of ", m), 1, 2 )
-    
-    # this does the second plot -- density plot of interval lengths
-    plot(density(intervals[3,]), main="Interval Lengths")
-  })
-  
+  output$unknown.both.Plot <- renderPlot( make.plots("Mean and Variance") )
+  output$unknown.mean.Plot <- renderPlot( make.plots("Only Mean") )
+   
 })
