@@ -17,7 +17,7 @@ shinyUI(fluidPage(
       sliderInput("size",
                   "Size of sample:",min = 10,max = 1000,value = 50),
       sliderInput("sd",
-                  "Standard Deviation:",min = 0.1,max = 10.0,value = 2),
+                  "Standard Deviation:",min = 0.1,max = 100,value = 2),
       sliderInput("mean",
                   "Mean:",min = -10,max = 10,value = 0)
      ),
