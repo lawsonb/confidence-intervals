@@ -15,12 +15,12 @@ shinyUI(fluidPage(
       sliderInput("trials",
                   "Number of samples:",min = 20,max = 200,value = 100),
       sliderInput("size",
-                  "Size of sample:",min = 10,max = 1000,value = 50),
+                  "Size of sample:",min = 5,max = 500,value = 50),
       sliderInput("sd",
                   "Standard Deviation:",min = 0.1,max = 100,value = 2),
       sliderInput("mean",
                   "Mean:",min = -10,max = 10,value = 0)
-     ),
+    ),
     # Show a plot of the trials
     mainPanel(
       plotOutput("unknown.both.Plot"),
